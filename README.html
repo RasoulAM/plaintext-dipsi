@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">code{white-space: pre;}</style>
+</head>
+<body>
+<h1 id="privacy-preserving-query-demonstration">Privacy-preserving Query Demonstration</h1>
+<p>This script simulates the following two queries over an SQLite database:</p>
+<pre><code>SELECT SUM(table1.val) + Laplace(0, sensitivity(SUM) / eps)
+FROM table1, table2
+WHERE table1.id = table2.id
+AND table2.prop IN (param1, param2, ...)    </code></pre>
+<pre><code>SELECT COUNT(table1.val) + Laplace(0, 1 / eps)
+FROM table1, table2
+WHERE table1.id = table2.id
+AND table2.prop IN (param1, param2, ...)    </code></pre>
+<p>An unbiased estimate for <code>sensitivity(SUM)</code>, defined to be the maximum possible difference in <code>SUM</code> for any two tables that differ in a single entry, is obtained from the following expression:</p>
+<pre><code>MAX(table1.val)(1 + 1 / COUNT(table1.val)) - 1</code></pre>
+<p>The variance of the query results is controlled by a privacy parameter, <code>eps</code>: lower values of <code>eps</code> correspond to higher privacy but lower accuracy. Note that application-specific post-processing may be required; for instance due to the fact that the queries can return negative numbers.</p>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li>Python 3</li>
+<li><a href="https://pypi.org/project/pysqlite3/">pysqlite3</a></li>
+<li><a href="https://pypi.org/project/numpy/">numpy</a></li>
+</ul>
+<h2 id="usage">Usage</h2>
+<p>The script <code>query.py</code> has two required arguments, the query type (<code>sum</code> or <code>count</code>), and the location of the input database (an example input <code>example.db</code> is provided with the code).</p>
+<p>The database is expected to have two tables, named <code>T1_NAME</code> (by default equal to <code>table1</code>) and <code>T2_NAME</code> (by default equal to <code>table2</code>). Both tables have an attribute <code>id</code>, which determines their intersection. <code>table1</code> has an attribute <code>val</code>, which determines the result of the aggregation, and <code>table2</code> has an attribute <code>prop</code>, which is used to filter the result of the intersection before aggregation. The values of <code>prop</code> on which to filter are specified by <code>T2_PARAMS</code>. If <code>T2_PARAMS</code> is not specified, no filtering is done. All table attributes are expected to be integers.</p>
+<p>Full usage of <code>query.py</code>:</p>
+<pre><code>usage: query.py [-h] [--eps EPS] [--t1_name T1_NAME] [--t2_name T2_NAME]
+                [--t2_params T2_PARAMS [T2_PARAMS ...]]
+                query_type db_file
+
+positional arguments:
+  query_type            query type: &#39;sum&#39; or &#39;count&#39;
+  db_file               location of sqlite datbase
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --eps EPS             privacy parameter (default: 0.1)
+  --t1_name T1_NAME     name of aggregated table (default: table1)
+  --t2_name T2_NAME     name of second table (default: table2)
+  --t2_params T2_PARAMS [T2_PARAMS ...]
+                        values of prop that filter second table (default: [])</code></pre>
+<p>Example usage:</p>
+<pre><code>$ ./query.py sum example.db --eps 0.01 --t2_params -1 0 2
+Result of query: 500821.92</code></pre>
+<p>Note that multiple runs of the same command are (intentionally and by design) not guaranteed to produce the same results due to the stochastic nature of the queries.</p>
+</body>
+</html>
