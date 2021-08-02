@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 
 import argparse
-import math
 import sqlite3
 from numpy.random import laplace
+import pandas as pd
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("query_type", help="query type: 'sum' or 'count'")
@@ -42,19 +42,43 @@ if args.query_type == "sum":
     
 elif args.query_type == "count":
     delta_val = 1
-    
     query = (f"SELECT COUNT({args.t1_name}.val) "
              f"FROM {args.t1_name},{args.t2_name} " 
              f"WHERE {args.t1_name}.id = {args.t2_name}.id ")
     if args.t2_params:
         query += (f"AND {args.t2_name}.prop IN "
                   f"({', '.join(args.t2_params)})")
-                  
     c.execute(query)
     res, = c.fetchone()
     res = res if res else 0
     res += laplace(0, delta_val / args.eps)
     print("Result of query: {:.2f}".format(res))
+
+elif args.query_type == "ldp_all":
+    c.execute(f"SELECT * FROM sens")
+    sens = c.fetchall()
+    sens_dict = {}
+    for id, val1_sens, val2_sens in sens:
+        sens_dict[id] = val1_sens, val2_sens
+
+    query = (f"SELECT DISTINCT {args.t1_name}.id, {args.t1_name}.val1, {args.t1_name}.val2 "
+             f"FROM {args.t1_name},{args.t2_name} "
+             f"WHERE {args.t1_name}.id = {args.t2_name}.id ")
+    if args.t2_params:
+        query += (f"AND {args.t2_name}.prop IN "
+                  f"({', '.join(args.t2_params)})")
+
+    c.execute(query)
+    res = c.fetchall()
+    res = res if res else 0
+    for i, entry in enumerate(res):
+        new_entry = (entry[1] + laplace(0, sens_dict[entry[0]][0] / args.eps),
+                     laplace(0, sens_dict[entry[0]][1] / args.eps))
+        res[i] = new_entry
+    df = pd.DataFrame(res, columns=['val1', 'val2'])
+    print("Result of query (first 5 lines): ")
+    print(df.head())
+    df.to_csv('result.csv', index=False)
 
 conn.commit()
 conn.close()
