@@ -29,7 +29,9 @@ An unbiased estimate for `sensitivity(SUM)`, defined to be the maximum possible 
 ```
 MAX(table1.val)(1 + 1 / COUNT(table1.val)) - 1
 ```
-The sensitivity for each value attribute in `table1`, for `ldp_all` can possibly be the range of values of that attribute.  
+where `MAX(table1.val)` is the current maximum value in the table. This expression is used in the code to estimate the sensitivity.
+
+The sensitivity for each value attribute in `table1`, for `ldp_all` can possibly be the range of values of that attribute, and are provided as input.  
 
 The variance of the query results is controlled by a privacy parameter, `eps`: lower values of `eps` correspond to higher privacy but lower accuracy. Note that application-specific post-processing may be required; for instance due to the fact that the queries can return negative numbers.
 
@@ -73,18 +75,18 @@ Example usage:
 
 sum:
 ```
-$ ./query.py sum example.db --eps 0.01 --t2_params -1 0 2
-Result of query: 25174264.92
+$ ./query.py sum example.db --eps 10 --t2_params -1 0 2
+Result of query: 25160383.80
 ```
 ldp_all:
 ```
-$ ./query.py ldp_all example2.db --eps 0.01 --t2_params -1 0 2 --sens 10 1
+$ ./query.py ldp_all example2.db --eps 10 --t2_params -1 0 2 --sens 99 9
 Result of query (first 5 lines):
-   val1  val2
-0  -1546  184
-1  -927  2672
-2  -20710 -15
-3   25295 -542
-4  -37500 750
+  val1  val2
+0   15     8    
+1    8     3
+2   90     5
+3   71     3
+4   91     7
 ```
 Note that multiple runs of the same command are (intentionally and by design) not guaranteed to produce the same results due to the stochastic nature of the queries.
