@@ -13,6 +13,7 @@ parser.add_argument("query_type", help="query type: 'sum' or 'count'")
 parser.add_argument("db_file", help="location of sqlite database")
 parser.add_argument("--eps", type=float, default=0.1, help="privacy parameter")
 parser.add_argument("--t1_name", default="table1", help="name of aggregated table")
+parser.add_argument("--t1_params", default=[], nargs="+", help="values of prop that filter first table")
 parser.add_argument("--t2_name", default="table2", help="name of second table")
 parser.add_argument("--t2_params", default=[], nargs="+", help="values of prop that filter second table")
 parser.add_argument("--sens", type=int, default=[], nargs="+", help="the sensitivity of each attribute")
@@ -33,6 +34,11 @@ if args.query_type == "sum":
     query = (f"SELECT SUM({args.t1_name}.val) "
              f"FROM {args.t1_name},{args.t2_name} " 
              f"WHERE {args.t1_name}.id = {args.t2_name}.id ")
+
+    if args.t1_params:
+        query += (f"AND {args.t1_name}.prop IN "
+                  f"({', '.join(args.t1_params)})")
+
     if args.t2_params:
         query += (f"AND {args.t2_name}.prop IN "
                   f"({', '.join(args.t2_params)})")
@@ -48,6 +54,11 @@ elif args.query_type == "count":
     query = (f"SELECT COUNT({args.t1_name}.val) "
              f"FROM {args.t1_name},{args.t2_name} " 
              f"WHERE {args.t1_name}.id = {args.t2_name}.id ")
+
+    if args.t1_params:
+        query += (f"AND {args.t1_name}.prop IN "
+                  f"({', '.join(args.t1_params)})")
+
     if args.t2_params:
         query += (f"AND {args.t2_name}.prop IN "
                   f"({', '.join(args.t2_params)})")
@@ -62,6 +73,11 @@ elif args.query_type == "ldp_all":
         query = (f"SELECT DISTINCT {args.t1_name}.id, {args.t1_name}.val1, {args.t1_name}.val2 "
                  f"FROM {args.t1_name},{args.t2_name} "
                  f"WHERE {args.t1_name}.id = {args.t2_name}.id ")
+
+        if args.t1_params:
+            query += (f"AND {args.t1_name}.prop IN "
+                      f"({', '.join(args.t1_params)})")
+
         if args.t2_params:
             query += (f"AND {args.t2_name}.prop IN "
                       f"({', '.join(args.t2_params)})")
