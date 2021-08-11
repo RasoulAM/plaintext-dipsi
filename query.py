@@ -9,7 +9,7 @@ import pandas as pd
 # np.random.seed(0)
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument("query_type", help="query type: 'sum' or 'count'")
+parser.add_argument("query_type", help="query type: 'sum' or 'count' or 'ldp_all'")
 parser.add_argument("db_file", help="location of sqlite database")
 parser.add_argument("--eps", type=float, default=0.1, help="privacy parameter")
 parser.add_argument("--t1_name", default="table1", help="name of aggregated table")
