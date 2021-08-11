@@ -44,7 +44,7 @@ The variance of the query results is controlled by a privacy parameter, `eps`: l
 
 ## Usage
 
-The script `query.py` has two or three required arguments depending on the query type, the arguments are query type (`sum`, `count` or `ldp_all`), the location of the input database (two example inputs `example.db` and `example2.db` are provided with the code. `example.db` used for `sum` and `count`, and `example2.db` for `ldp_all`), and finally sensitivy which typically takes two values (if you chose `ldp_all`).
+The script `query.py` has two or three required arguments depending on the query type, the arguments are query type (`sum`, `count` or `ldp_all`), the location of the input database (two example inputs `example.db` and `example2.db` are provided with the code. `example.db` used for `sum` and `count`, and `example2.db` for `ldp_all`), and finally sensitivity which typically takes two values (if you chose `ldp_all`).
 
 For the query types `sum` and  `count`, the database is expected to have two tables, named `T1_NAME` (by default equal to `table1`) and `T2_NAME` (by default equal to `table2`). Both tables have an attribute `id`, which determines their intersection. `table1` has an attribute `val`, which determines the result of the aggregation, and `table2` has an attribute `prop`, which is used to filter the result of the intersection before aggregation. The values of `prop` on which to filter are specified by `T2_PARAMS`. If `T2_PARAMS` is not specified, no filtering is done. All table attributes are expected to be integers.
 
